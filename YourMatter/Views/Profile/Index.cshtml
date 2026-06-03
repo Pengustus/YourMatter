@@ -1,67 +1,135 @@
-@model IEnumerable<YourMatter.Data.Models.Post>
+@model YourMatter.Data.Models.ApplicationUser
 @using YourMatter.Data.Models
 @using Microsoft.AspNetCore.Identity
 @inject UserManager<ApplicationUser> UserManager
 @{
-    ViewData["Title"] = "Global Retro Feed";
+    ViewData["Title"] = Model.DisplayName + "'s Profile";
     var currentUser = await UserManager.GetUserAsync(User);
+    var isOwnProfile = currentUser != null && currentUser.Id == Model.Id;
+    var posts = ViewBag.Posts as IEnumerable<Post> ?? new List<Post>();
+    var friends = ViewBag.Friends as IEnumerable<ApplicationUser> ?? new List<ApplicationUser>();
+    var friendshipStatus = ViewBag.FriendshipStatus as FriendRequestStatus?;
 }
 
 <div class="row">
-    <!-- Left Column: User Status & Navigation panel -->
-    <div class="col-lg-4 mb-4 animate-fade-in">
-        @if (currentUser != null)
-        {
-            <div class="custom-card text-center border-top border-4 border-primary">
-                <img src="@(string.IsNullOrEmpty(currentUser.ProfilePictureUrl) ? "/images/default_profile.png" : currentUser.ProfilePictureUrl)" 
-                     alt="My Avatar" class="profile-sidebar-img" style="max-height: 180px; width: 180px; border-radius: 50%;" />
-                <h3 class="mt-2">@currentUser.DisplayName</h3>
-                <p class="text-muted small">@currentUser.Email</p>
-                <p class="text-muted small"><i class="bi bi-geo-alt-fill text-accent"></i> @(string.IsNullOrEmpty(currentUser.Location) ? "Worldwide" : currentUser.Location)</p>
-                
-                <div class="d-grid gap-2 mt-3 pt-3 border-top">
-                    <a asp-controller="Profile" asp-action="Index" asp-route-id="" class="btn btn-retro-primary btn-sm">
-                        <i class="bi bi-person-badge-fill me-1"></i>Go to My Profile
-                    </a>
-                    <a asp-controller="Friends" asp-action="Index" class="btn btn-retro-outline btn-sm">
-                        <i class="bi bi-people-fill me-1"></i>Manage Friends
-                    </a>
-                    <a asp-controller="Profile" asp-action="Edit" class="btn btn-light btn-sm text-secondary border">
-                        <i class="bi bi-gear-fill me-1"></i>Settings
-                    </a>
+    <!-- Left Column: Profile Info & Friends -->
+    <div class="col-lg-4 mb-4">
+        <div class="custom-card text-center border-top border-4 border-primary">
+            <img src="@(string.IsNullOrEmpty(Model.ProfilePictureUrl) ? "/images/default_profile.png" : Model.ProfilePictureUrl)" 
+                 alt="@Model.DisplayName's avatar" class="profile-sidebar-img" />
+            
+            <h2 class="profile-name">@Model.DisplayName</h2>
+            <p class="text-muted small mb-3">Member since @Model.CreatedOn.ToString("MMMM yyyy")</p>
+
+            @if (isOwnProfile)
+            {
+                <a asp-controller="Profile" asp-action="Edit" class="btn btn-retro-outline btn-sm w-100 mb-2">
+                    <i class="bi bi-pencil-square me-1"></i>Edit My Profile
+                </a>
+            }
+            else if (currentUser != null)
+            {
+                <div class="my-3">
+                    @if (friendshipStatus == null)
+                    {
+                        <form asp-controller="Friends" asp-action="SendRequest" method="post">
+                            <input type="hidden" name="receiverId" value="@Model.Id" />
+                            <input type="hidden" name="returnUrl" value="@Context.Request.Path" />
+                            <button type="submit" class="btn btn-retro-primary btn-sm w-100">
+                                <i class="bi bi-person-plus-fill me-1"></i>Add to Friends
+                            </button>
+                        </form>
+                    }
+                    else if (friendshipStatus == FriendRequestStatus.Pending)
+                    {
+                        <!-- Let's check if current user is the sender or receiver of the pending request -->
+                        @* We can determine this by checking if the request was sent by current user *@
+                        <div class="p-2 bg-light rounded text-center mb-2">
+                            <span class="text-accent fw-semibold small"><i class="bi bi-clock-history me-1"></i>Friendship Pending</span>
+                        </div>
+                        
+                        <form asp-controller="Friends" asp-action="DeclineOrCancelRequest" method="post" class="d-inline">
+                            <input type="hidden" name="otherUserId" value="@Model.Id" />
+                            <input type="hidden" name="returnUrl" value="@Context.Request.Path" />
+                            <button type="submit" class="btn btn-outline-danger btn-sm w-100">
+                                <i class="bi bi-x-circle me-1"></i>Cancel / Decline Request
+                            </button>
+                        </form>
+                    }
+                    else if (friendshipStatus == FriendRequestStatus.Accepted)
+                    {
+                        <div class="p-2 bg-light rounded text-center mb-2">
+                            <span class="text-success fw-semibold small"><i class="bi bi-people-fill me-1"></i>You are Friends</span>
+                        </div>
+                        <form asp-controller="Friends" asp-action="DeclineOrCancelRequest" method="post">
+                            <input type="hidden" name="otherUserId" value="@Model.Id" />
+                            <input type="hidden" name="returnUrl" value="@Context.Request.Path" />
+                            <button type="submit" class="btn btn-outline-danger btn-sm w-100" onclick="return confirm('Remove friend?');">
+                                <i class="bi bi-person-dash-fill me-1"></i>Remove Friend
+                            </button>
+                        </form>
+                    }
                 </div>
+            }
+
+            <hr />
+
+            <ul class="profile-details-list text-start">
+                <li>
+                    <strong>Location:</strong>
+                    <span class="text-secondary">@(string.IsNullOrEmpty(Model.Location) ? "Not Specified" : Model.Location)</span>
+                </li>
+                <li>
+                    <strong>Email:</strong>
+                    <span class="text-secondary">@Model.Email</span>
+                </li>
+            </ul>
+        </div>
+
+        <!-- Bio Card -->
+        <div class="custom-card border-top border-4 border-accent">
+            <div class="panel-header-retro panel-header-orange">
+                <span><i class="bi bi-chat-quote-fill me-2"></i>About Me</span>
+            </div>
+            <p class="mb-0 text-start" style="white-space: pre-line;">
+                @(string.IsNullOrEmpty(Model.Bio) ? "Hi, I haven't written a biography yet!" : Model.Bio)
+            </p>
+        </div>
+
+        <!-- Friends Card (Nostalgic MySpace Top Friends) -->
+        <div class="custom-card">
+            <div class="panel-header-retro">
+                <span><i class="bi bi-people-fill me-2"></i>Friend Space</span>
+                <span class="badge bg-white text-primary">@friends.Count()</span>
             </div>
             
-            <div class="custom-card border-top border-4 border-accent bg-light">
-                <h5 class="fw-bold mb-3"><i class="bi bi-rocket-takeoff-fill text-accent me-1"></i>Retro Social Club</h5>
-                <p class="small text-secondary mb-0">
-                    Welcome to <strong>YourMatter</strong>! Relive the golden age of the internet with our modernized MySpace clone. Post updates, comment on your friends' walls, and like posts asynchronously with zero page reloads.
-                </p>
-            </div>
-        }
-        else
-        {
-            <div class="custom-card text-center border-top border-4 border-accent">
-                <h3 class="mb-3">Join the Club!</h3>
-                <i class="bi bi-rocket-takeoff text-accent display-4 d-block mb-3"></i>
-                <p class="text-secondary small mb-4">
-                    YourMatter is a space for modern retro blogging and friend networking. Connect, post updates, customize profiles, and relive early web aesthetics.
-                </p>
-                <div class="d-grid gap-2">
-                    <a asp-controller="Account" asp-action="Register" class="btn btn-retro-accent">
-                        <i class="bi bi-person-plus-fill me-1"></i>Create Free Account
-                    </a>
-                    <a asp-controller="Account" asp-action="Login" class="btn btn-retro-outline">
-                        <i class="bi bi-box-arrow-in-right me-1"></i>Login
-                    </a>
+            @if (!friends.Any())
+            {
+                <p class="text-muted small mb-0">No friends added yet.</p>
+            }
+            else
+            {
+                <div class="friends-grid">
+                    @foreach (var friend in friends)
+                    {
+                        <div class="friend-item-card">
+                            <a asp-controller="Profile" asp-action="Index" asp-route-id="@friend.Id">
+                                <img src="@(string.IsNullOrEmpty(friend.ProfilePictureUrl) ? "/images/default_profile.png" : friend.ProfilePictureUrl)" 
+                                     alt="@friend.DisplayName" class="friend-avatar-thumb" />
+                            </a>
+                            <a asp-controller="Profile" asp-action="Index" asp-route-id="@friend.Id" class="friend-name-link">
+                                @friend.DisplayName
+                            </a>
+                        </div>
+                    }
                 </div>
-            </div>
-        }
+            }
+        </div>
     </div>
 
-    <!-- Right Column: Status publisher & Feed posts -->
+    <!-- Right Column: Post Input & Wall -->
     <div class="col-lg-8">
-        @if (currentUser != null)
+        @if (isOwnProfile)
         {
             <!-- Post Creation Area -->
             <div class="custom-card mb-4 border-start border-4 border-primary">
@@ -80,18 +148,18 @@
             </div>
         }
 
-        <h3 class="mb-3 border-bottom pb-2">Global Live Feed</h3>
+        <h3 class="mb-3 border-bottom pb-2">@Model.DisplayName's Wall Posts</h3>
 
-        @if (!Model.Any())
+        @if (!posts.Any())
         {
             <div class="custom-card text-center py-5">
-                <i class="bi bi-chat-dots text-muted display-4"></i>
-                <p class="text-muted mt-2">The feed is currently empty. Be the first to start the conversation!</p>
+                <i class="bi bi-postcard text-muted display-4"></i>
+                <p class="text-muted mt-2">No wall posts yet.</p>
             </div>
         }
         else
         {
-            @foreach (var post in Model)
+            @foreach (var post in posts)
             {
                 var userLiked = currentUser != null && post.Likes.Any(l => l.UserId == currentUser.Id);
                 var isAdmin = User.IsInRole("Administrator");
@@ -100,10 +168,8 @@
                 <div class="custom-card post-card @(post.Author.Email == "admin@yourmatter.com" ? "post-card-admin" : "") animate-fade-in" id="post-@post.Id">
                     <div class="d-flex justify-content-between align-items-start mb-3">
                         <div class="d-flex align-items-center">
-                            <a asp-controller="Profile" asp-action="Index" asp-route-id="@post.AuthorId">
-                                <img src="@(string.IsNullOrEmpty(post.Author.ProfilePictureUrl) ? "/images/default_profile.png" : post.Author.ProfilePictureUrl)" 
-                                     alt="@post.Author.DisplayName" class="post-author-avatar me-3" />
-                            </a>
+                            <img src="@(string.IsNullOrEmpty(post.Author.ProfilePictureUrl) ? "/images/default_profile.png" : post.Author.ProfilePictureUrl)" 
+                                 alt="@post.Author.DisplayName" class="post-author-avatar me-3" />
                             <div>
                                 <h5 class="mb-0">
                                     <a asp-controller="Profile" asp-action="Index" asp-route-id="@post.AuthorId" class="text-decoration-none text-dark fw-bold">
@@ -139,7 +205,7 @@
                         }
                         else
                         {
-                            <span class="btn-like-ajax disabled d-flex align-items-center gap-2" title="Log in to like posts">
+                            <span class="btn-like-ajax disabled d-flex align-items-center gap-2">
                                 <i class="bi bi-heart"></i>
                                 <span>@post.Likes.Count</span>
                             </span>
@@ -158,10 +224,8 @@
 
                                 <div class="comment-item d-flex justify-content-between align-items-start py-2">
                                     <div class="d-flex gap-2">
-                                        <a asp-controller="Profile" asp-action="Index" asp-route-id="@comment.AuthorId">
-                                            <img src="@(string.IsNullOrEmpty(comment.Author.ProfilePictureUrl) ? "/images/default_profile.png" : comment.Author.ProfilePictureUrl)" 
-                                                 alt="@comment.Author.DisplayName" class="comment-avatar" />
-                                        </a>
+                                        <img src="@(string.IsNullOrEmpty(comment.Author.ProfilePictureUrl) ? "/images/default_profile.png" : comment.Author.ProfilePictureUrl)" 
+                                             alt="@comment.Author.DisplayName" class="comment-avatar" />
                                         <div>
                                             <div class="bg-white p-2 rounded shadow-sm">
                                                 <a asp-controller="Profile" asp-action="Index" asp-route-id="@comment.AuthorId" class="fw-bold text-decoration-none small d-block">
@@ -224,6 +288,10 @@
                 $.ajax({
                     url: '/api/LikesApi/toggle/' + postId,
                     type: 'POST',
+                    headers: {
+                        // Anti forgery token if needed, but since we are doing simple API with cookie auth:
+                        // standard Identity handles cookies.
+                    },
                     success: function(data) {
                         btn.find('.likes-count').text(data.count);
                         if (data.liked) {

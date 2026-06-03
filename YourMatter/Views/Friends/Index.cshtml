@@ -1,0 +1,115 @@
+@model IEnumerable<YourMatter.Data.Models.ApplicationUser>
+@using YourMatter.Data.Models
+@{
+    ViewData["Title"] = "My Friends";
+    var pendingRequests = ViewBag.PendingRequests as IEnumerable<FriendRequest> ?? new List<FriendRequest>();
+}
+
+<div class="row">
+    <!-- Pending Requests List (only if any exist) -->
+    @if (pendingRequests.Any())
+    {
+        <div class="col-12 mb-4">
+            <div class="custom-card border-top border-4 border-accent shadow-sm animate-fade-in">
+                <div class="panel-header-retro panel-header-orange">
+                    <span><i class="bi bi-person-exclamation me-2"></i>Pending Friend Requests</span>
+                    <span class="badge bg-white text-danger">@pendingRequests.Count() new</span>
+                </div>
+                
+                <div class="row row-cols-1 row-cols-md-2 g-3">
+                    @foreach (var request in pendingRequests)
+                    {
+                        <div class="col">
+                            <div class="bg-light p-3 rounded d-flex align-items-center justify-content-between border">
+                                <div class="d-flex align-items-center">
+                                    <img src="@(string.IsNullOrEmpty(request.Sender.ProfilePictureUrl) ? "/images/default_profile.png" : request.Sender.ProfilePictureUrl)" 
+                                         alt="@request.Sender.DisplayName" class="friend-avatar-thumb me-3" style="width: 50px; height: 50px;" />
+                                    <div>
+                                        <h6 class="mb-0 fw-bold">
+                                            <a asp-controller="Profile" asp-action="Index" asp-route-id="@request.SenderId" class="text-decoration-none text-dark">
+                                                @request.Sender.DisplayName
+                                            </a>
+                                        </h6>
+                                        <small class="text-muted">Sent @request.SentOn.ToLocalTime().ToString("g")</small>
+                                    </div>
+                                </div>
+                                <div class="d-flex gap-2">
+                                    <form asp-controller="Friends" asp-action="AcceptRequest" method="post">
+                                        <input type="hidden" name="senderId" value="@request.SenderId" />
+                                        <button type="submit" class="btn btn-success btn-sm px-3 rounded-pill fw-semibold">
+                                            <i class="bi bi-check-lg"></i> Accept
+                                        </button>
+                                    </form>
+                                    
+                                    <form asp-controller="Friends" asp-action="DeclineOrCancelRequest" method="post">
+                                        <input type="hidden" name="otherUserId" value="@request.SenderId" />
+                                        <input type="hidden" name="returnUrl" value="@Context.Request.Path" />
+                                        <button type="submit" class="btn btn-outline-danger btn-sm px-3 rounded-pill fw-semibold">
+                                            <i class="bi bi-x-lg"></i> Decline
+                                        </button>
+                                    </form>
+                                </div>
+                            </div>
+                        </div>
+                    }
+                </div>
+            </div>
+        </div>
+    }
+
+    <!-- Friends Directory List -->
+    <div class="col-12">
+        <div class="custom-card shadow-sm border-top border-4 border-primary">
+            <div class="panel-header-retro">
+                <span><i class="bi bi-person-heart me-2"></i>My Friend Space</span>
+                <span class="badge bg-white text-primary">@Model.Count() total</span>
+            </div>
+
+            @if (!Model.Any())
+            {
+                <div class="text-center py-5">
+                    <i class="bi bi-people text-muted display-4"></i>
+                    <h4 class="text-muted mt-3">You don't have any friends added yet.</h4>
+                    <p class="text-secondary small">Start search and add other users on the network directory.</p>
+                    <a asp-controller="Profile" asp-action="Browse" class="btn btn-retro-primary mt-2">
+                        Browse Members Directory <i class="bi bi-arrow-right-short"></i>
+                    </a>
+                </div>
+            }
+            else
+            {
+                <div class="row row-cols-1 row-cols-sm-2 row-cols-md-3 row-cols-lg-4 g-4">
+                    @foreach (var friend in Model)
+                    {
+                        <div class="col">
+                            <div class="card h-100 text-center custom-card m-0 hover-lift d-flex flex-column justify-content-between py-3">
+                                <div>
+                                    <a asp-controller="Profile" asp-action="Index" asp-route-id="@friend.Id">
+                                        <img src="@(string.IsNullOrEmpty(friend.ProfilePictureUrl) ? "/images/default_profile.png" : friend.ProfilePictureUrl)" 
+                                             alt="@friend.DisplayName" class="friend-avatar-thumb mx-auto mb-2" style="width: 80px; height: 80px; border-radius: 50%;" />
+                                    </a>
+                                    <h6 class="mb-1 fw-bold">
+                                        <a asp-controller="Profile" asp-action="Index" asp-route-id="@friend.Id" class="text-decoration-none text-primary">
+                                            @friend.DisplayName
+                                        </a>
+                                    </h6>
+                                    <p class="text-muted small mb-2"><i class="bi bi-geo-alt-fill text-accent"></i> @(string.IsNullOrEmpty(friend.Location) ? "Worldwide" : friend.Location)</p>
+                                </div>
+
+                                <div class="mt-2 pt-2 border-top">
+                                    <form asp-controller="Friends" asp-action="DeclineOrCancelRequest" method="post" onsubmit="return confirm('Are you sure you want to remove @friend.DisplayName from your friends?');">
+                                        <input type="hidden" name="otherUserId" value="@friend.Id" />
+                                        <input type="hidden" name="returnUrl" value="@Context.Request.Path" />
+                                        <button type="submit" class="btn btn-outline-danger btn-sm w-100 rounded-pill">
+                                            <i class="bi bi-person-dash-fill"></i> Remove Friend
+                                        </button>
+                                    </form>
+                                </div>
+                            </div>
+                        </div>
+                    }
+                </div>
+            }
+        </div>
+    </div>
+</div>

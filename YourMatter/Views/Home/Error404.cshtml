@@ -1,0 +1,23 @@
+@{
+    ViewData["Title"] = "404 - Not Found";
+}
+
+<div class="row justify-content-center">
+    <div class="col-md-8 col-lg-6">
+        <div class="custom-card shadow-lg error-retro-container mt-4 border-top border-4 border-accent">
+            <div class="error-code-neon">404</div>
+            <h2 class="fw-bold mb-3"><i class="bi bi-compass text-accent me-2"></i>Lost in Cyberspace</h2>
+            <p class="text-secondary mb-4">
+                The profile or page you are looking for does not exist, or has been removed from the YourMatter network.
+            </p>
+            <div class="d-flex justify-content-center gap-3">
+                <a asp-controller="Home" asp-action="Index" class="btn btn-retro-accent">
+                    <i class="bi bi-house-door-fill me-1"></i>Back Home
+                </a>
+                <a asp-controller="Profile" asp-action="Browse" class="btn btn-retro-outline">
+                    <i class="bi bi-people-fill me-1"></i>Browse Members
+                </a>
+            </div>
+        </div>
+    </div>
+</div>

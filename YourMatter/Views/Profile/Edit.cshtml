@@ -1,0 +1,73 @@
+@model YourMatter.Models.Profile.EditProfileViewModel
+@{
+    ViewData["Title"] = "Edit Profile";
+}
+
+<div class="row justify-content-center">
+    <div class="col-md-8 col-lg-7">
+        <div class="custom-card shadow-lg mt-3 border-top border-4 border-primary">
+            <div class="panel-header-retro">
+                <span><i class="bi bi-pencil-square me-2"></i>Edit Profile Settings</span>
+                <small class="text-white-50">yourmatter</small>
+            </div>
+
+            <form asp-controller="Profile" asp-action="Edit" method="post">
+                <div asp-validation-summary="ModelOnly" class="text-danger mb-3" role="alert"></div>
+
+                <div class="row mb-3">
+                    <div class="col-md-6 mb-3 mb-md-0">
+                        <label asp-for="DisplayName" class="form-label fw-semibold">Display Name</label>
+                        <input asp-for="DisplayName" class="form-control" placeholder="Choose a display name" />
+                        <span asp-validation-for="DisplayName" class="text-danger small"></span>
+                    </div>
+
+                    <div class="col-md-6">
+                        <label asp-for="Location" class="form-label fw-semibold">Location</label>
+                        <input asp-for="Location" class="form-control" placeholder="e.g. San Francisco, CA" />
+                        <span asp-validation-for="Location" class="text-danger small"></span>
+                    </div>
+                </div>
+
+                <div class="mb-3">
+                    <label asp-for="ProfilePictureUrl" class="form-label fw-semibold">Profile Picture URL</label>
+                    <input asp-for="ProfilePictureUrl" class="form-control" placeholder="Enter image URL" id="profilePicInput" />
+                    <span asp-validation-for="ProfilePictureUrl" class="text-danger small"></span>
+                    <div class="form-text text-muted">Enter a direct image link (or use default placeholder avatars like <code>/images/default_profile.png</code>).</div>
+                </div>
+
+                <div class="text-center my-3 bg-light p-3 rounded" id="avatarPreviewContainer">
+                    <div class="small fw-semibold mb-2 text-muted">Avatar Preview</div>
+                    <img src="@Model.ProfilePictureUrl" alt="Avatar preview" class="profile-sidebar-img" id="avatarPreview" style="max-width: 150px; height: 150px;" onerror="this.src='/images/default_profile.png';" />
+                </div>
+
+                <div class="mb-4">
+                    <label asp-for="Bio" class="form-label fw-semibold">Biography / Wall Welcome Message</label>
+                    <textarea asp-for="Bio" class="form-control" rows="5" placeholder="Write something about yourself here... Custom styles, music, HTML styling nostalgic references are welcome!"></textarea>
+                    <span asp-validation-for="Bio" class="text-danger small"></span>
+                </div>
+
+                <div class="d-flex justify-content-between gap-3 border-top pt-3">
+                    <a asp-controller="Profile" asp-action="Index" class="btn btn-retro-outline px-4"><i class="bi bi-x-circle me-1"></i>Cancel</a>
+                    <button type="submit" class="btn btn-retro-primary px-4"><i class="bi bi-check-circle me-1"></i>Save Changes</button>
+                </div>
+            </form>
+        </div>
+    </div>
+</div>
+
+@section Scripts {
+    <partial name="_ValidationScriptsPartial" />
+    <script>
+        $(document).ready(function() {
+            // Instant avatar preview update on input
+            $('#profilePicInput').on('input', function() {
+                var url = $(this).val().trim();
+                if (url) {
+                    $('#avatarPreview').attr('src', url);
+                } else {
+                    $('#avatarPreview').attr('src', '/images/default_profile.png');
+                }
+            });
+        });
+    </script>
+}

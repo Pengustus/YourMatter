@@ -1,0 +1,122 @@
+@model IEnumerable<YourMatter.Data.Models.ApplicationUser>
+@{
+    ViewData["Title"] = "Browse Members";
+    string? searchTerm = ViewBag.SearchTerm as string;
+    string? sortBy = ViewBag.SortBy as string;
+    int currentPage = ViewBag.CurrentPage is int page ? page : 1;
+    int totalPages = ViewBag.TotalPages is int pages ? pages : 1;
+    int totalCount = ViewBag.TotalCount is int count ? count : 0;
+}
+
+<div class="custom-card shadow-sm border-top border-4 border-primary">
+    <div class="panel-header-retro">
+        <span><i class="bi bi-people-fill me-2"></i>Browse Network Directory</span>
+        <span class="badge bg-white text-primary">@totalCount members found</span>
+    </div>
+
+    <!-- Search & Filter Controls -->
+    <form method="get" asp-controller="Profile" asp-action="Browse" class="mb-4">
+        <div class="row g-3">
+            <div class="col-md-6 col-lg-7">
+                <label class="form-label small fw-semibold text-muted">Search Name or Location</label>
+                <div class="input-group">
+                    <span class="input-group-text"><i class="bi bi-search"></i></span>
+                    <input type="text" name="searchTerm" class="form-control" placeholder="Search by name, bio, location..." value="@searchTerm" />
+                </div>
+            </div>
+            
+            <div class="col-md-3 col-lg-3">
+                <label class="form-label small fw-semibold text-muted">Sort By</label>
+                <select name="sortBy" class="form-select">
+                    <option value="" selected="@(string.IsNullOrEmpty(sortBy))">Newest Members</option>
+                    <option value="name" selected="@(sortBy == "name")">Alphabetical (Name)</option>
+                    <option value="location" selected="@(sortBy == "location")">Location</option>
+                    <option value="oldest" selected="@(sortBy == "oldest")">Oldest Members</option>
+                </select>
+            </div>
+
+            <div class="col-md-3 col-lg-2 d-flex align-items-end">
+                <button type="submit" class="btn btn-retro-primary w-100 py-2">
+                    <i class="bi bi-funnel-fill me-1"></i>Filter
+                </button>
+            </div>
+        </div>
+    </form>
+
+    <hr class="mb-4" />
+
+    <!-- Users List -->
+    @if (!Model.Any())
+    {
+        <div class="text-center py-5">
+            <i class="bi bi-emoji-neutral text-muted display-4"></i>
+            <h4 class="text-muted mt-3">No members found matching your filters.</h4>
+            <a asp-action="Browse" class="btn btn-retro-outline btn-sm mt-2">Clear Filters & View All</a>
+        </div>
+    }
+    else
+    {
+        <div class="row row-cols-1 row-cols-md-2 g-4 mb-4">
+            @foreach (var user in Model)
+            {
+                <div class="col">
+                    <div class="card h-100 user-search-card custom-card hover-lift m-0">
+                        <img src="@(string.IsNullOrEmpty(user.ProfilePictureUrl) ? "/images/default_profile.png" : user.ProfilePictureUrl)" 
+                             alt="@user.DisplayName's profile picture" class="user-search-avatar" />
+                        
+                        <div class="flex-grow-1 min-w-0">
+                            <h5 class="mb-1 text-truncate">
+                                <a asp-controller="Profile" asp-action="Index" asp-route-id="@user.Id" class="text-decoration-none text-primary fw-bold">
+                                    @user.DisplayName
+                                </a>
+                            </h5>
+                            
+                            <p class="text-muted small mb-1 text-truncate">
+                                <i class="bi bi-geo-alt-fill me-1 text-accent"></i>
+                                @(string.IsNullOrEmpty(user.Location) ? "Unspecified Location" : user.Location)
+                            </p>
+                            
+                            <p class="text-muted small mb-2">
+                                <i class="bi bi-calendar-event me-1"></i>
+                                Joined @user.CreatedOn.ToString("MMM yyyy")
+                            </p>
+                            
+                            <a asp-controller="Profile" asp-action="Index" asp-route-id="@user.Id" class="btn btn-outline-primary btn-sm px-3 rounded-pill fw-semibold">
+                                View Profile <i class="bi bi-arrow-right-short"></i>
+                            </a>
+                        </div>
+                    </div>
+                </div>
+            }
+        </div>
+
+        <!-- Pagination -->
+        @if (totalPages > 1)
+        {
+            <nav aria-label="Member directory navigation">
+                <ul class="pagination justify-content-center">
+                    <li class="page-item @(currentPage == 1 ? "disabled" : "")">
+                        <a class="page-link" asp-action="Browse" asp-route-searchTerm="@searchTerm" asp-route-sortBy="@sortBy" asp-route-page="@(currentPage - 1)">
+                            <i class="bi bi-chevron-left"></i> Previous
+                        </a>
+                    </li>
+                    
+                    @for (int i = 1; i <= totalPages; i++)
+                    {
+                        <li class="page-item @(currentPage == i ? "active" : "")">
+                            <a class="page-link" asp-action="Browse" asp-route-searchTerm="@searchTerm" asp-route-sortBy="@sortBy" asp-route-page="@i">
+                                @i
+                            </a>
+                        </li>
+                    }
+                    
+                    <li class="page-item @(currentPage == totalPages ? "disabled" : "")">
+                        <a class="page-link" asp-action="Browse" asp-route-searchTerm="@searchTerm" asp-route-sortBy="@sortBy" asp-route-page="@(currentPage + 1)">
+                            Next <i class="bi bi-chevron-right"></i>
+                        </a>
+                    </li>
+                </ul>
+            </nav>
+        }
+    }
+</div>
