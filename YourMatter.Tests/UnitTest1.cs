@@ -20,7 +20,7 @@ namespace YourMatter.Tests
         public void Setup()
         {
             var options = new DbContextOptionsBuilder<YourMatterDbContext>()
-                .UseInMemoryDatabase(databaseName: Guid.NewGuid().ToString()) // Unique DB per test
+                .UseInMemoryDatabase(databaseName: Guid.NewGuid().ToString()) // Unique DB per test.
                 .Options;
 
             _context = new YourMatterDbContext(options);
