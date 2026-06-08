@@ -15,6 +15,23 @@ namespace YourMatter.Tests
         {
             _context = TestDbContextFactory.Create(Guid.NewGuid().ToString());
             _service = new PostService(_context);
+
+            // Seed a user so Author navigation property resolves
+            _context.Users.Add(new ApplicationUser
+            {
+                Id = "user1",
+                DisplayName = "Test User",
+                UserName = "testuser",
+                Email = "test@test.com"
+            });
+            _context.Users.Add(new ApplicationUser
+            {
+                Id = "user2",
+                DisplayName = "Other User",
+                UserName = "otheruser",
+                Email = "other@test.com"
+            });
+            _context.SaveChanges();
         }
 
         [TearDown]
@@ -146,8 +163,10 @@ namespace YourMatter.Tests
         [Test]
         public async Task GetFeedPostsAsync_ShouldReturnPostsNewestFirst()
         {
-            await _service.CreateAsync("user1", "first", null);
-            await _service.CreateAsync("user1", "second", null);
+            var post1 = new Post { AuthorId = "user1", Content = "first", CreatedOn = DateTime.UtcNow.AddMinutes(-1), IsDeleted = false };
+            var post2 = new Post { AuthorId = "user1", Content = "second", CreatedOn = DateTime.UtcNow, IsDeleted = false };
+            _context.Posts.AddRange(post1, post2);
+            await _context.SaveChangesAsync();
 
             var feed = (await _service.GetFeedPostsAsync()).ToList();
 
