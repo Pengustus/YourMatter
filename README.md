@@ -1,6 +1,6 @@
-# YourMatter - Retro-Modern MySpace Clone
+# YourMatter - MySpace Clone
 
-Welcome to **YourMatter**, a retro-modern social network clone built with ASP.NET Core 8.0. This project is developed to fulfill the requirements of the final exam project for the **"ASP.NET MVC"** course.
+Welcome to **YourMatter**, a social network clone built with ASP.NET Core 8.0.
 
 ---
 
