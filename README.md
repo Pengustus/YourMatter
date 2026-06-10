@@ -4,7 +4,7 @@ Welcome to **YourMatter**, a retro-modern social network clone built with ASP.NE
 
 ---
 
-## 🚀 Key Features
+## Key Features
 
 * **Custom Profiles**: View, customize, and edit your profile details, including display name, bio, location, and a custom profile picture.
 * **Classic Friends Grid**: A retro-style 3x3 friends showcase on user profiles, with the ability to search/browse members, send friend requests, and accept/decline incoming requests.
@@ -16,7 +16,7 @@ Welcome to **YourMatter**, a retro-modern social network clone built with ASP.NE
 
 ---
 
-## 🛠️ Technology Stack
+## Technology Stack
 
 * **Core Framework**: ASP.NET Core 8.0 (MVC)
 * **Database**: Microsoft SQL Server
@@ -27,7 +27,7 @@ Welcome to **YourMatter**, a retro-modern social network clone built with ASP.NE
 
 ---
 
-## 📂 Project Structure
+## Project Structure
 
 * **`YourMatter`**: The Web presentation layer containing Controllers, Views, Models, and static assets.
 * **`YourMatter.Data`**: The Data access layer holding Entity Framework models, DB Context, Migrations, and database initialization logic.
@@ -36,20 +36,19 @@ Welcome to **YourMatter**, a retro-modern social network clone built with ASP.NE
 
 ---
 
-## 🔑 Seeded Accounts & Credentials
+## Seeded Accounts & Credentials
 
 To easily evaluate and test the system, the database is pre-seeded with the following accounts (all password rules are configured for development):
 
 | Account Type | Email | Password | Role | Description |
 |---|---|---|---|---|
 | **Administrator** | `admin@yourmatter.com` | `AdminPass123!` | `Administrator` | Full moderation access. |
-| **First Friend** | `tom@myspace.com` | `TomPass123!` | `User` | Your classic first friend "Tom". |
+| **Standard User** | `tom@myspace.com` | `TomPass123!` | `User` | Community member. |
 | **Standard User** | `kelly@yourmatter.com` | `KellyPass123!` | `User` | Community member. |
-| **Standard User** | `bob@yourmatter.com` | `BobPass123!` | `User` | Community member. |
 
 ---
 
-## ⚙️ Getting Started
+## Getting Started
 
 1. **Configure Connection String**: Adjust the SQL Server connection string in [appsettings.json](file:///C:/Users/Orlin%20Rizov/source/repos/YourMatter/YourMatter/appsettings.json).
 2. **Database Update & Seeding**: Running the web application automatically applies pending EF Core migrations and seeds initial database structures.
