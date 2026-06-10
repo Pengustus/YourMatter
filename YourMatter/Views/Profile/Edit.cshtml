@@ -11,7 +11,7 @@
                 <small class="text-white-50">yourmatter</small>
             </div>
 
-            <form asp-controller="Profile" asp-action="Edit" method="post">
+            <form asp-controller="Profile" asp-action="Edit" method="post" enctype="multipart/form-data">
                 <div asp-validation-summary="ModelOnly" class="text-danger mb-3" role="alert"></div>
 
                 <div class="row mb-3">
@@ -29,10 +29,17 @@
                 </div>
 
                 <div class="mb-3">
-                    <label asp-for="ProfilePictureUrl" class="form-label fw-semibold">Profile Picture URL</label>
+                    <label asp-for="ProfilePictureFile" class="form-label fw-semibold">Upload Profile Picture File</label>
+                    <input asp-for="ProfilePictureFile" type="file" class="form-control" id="profilePicFileInput" accept="image/*" />
+                    <span asp-validation-for="ProfilePictureFile" class="text-danger small"></span>
+                    <div class="form-text text-muted">Select an image file from your computer (JPG, PNG, GIF up to 5MB).</div>
+                </div>
+
+                <div class="mb-3">
+                    <label asp-for="ProfilePictureUrl" class="form-label fw-semibold">Or Profile Picture URL</label>
                     <input asp-for="ProfilePictureUrl" class="form-control" placeholder="Enter image URL" id="profilePicInput" />
                     <span asp-validation-for="ProfilePictureUrl" class="text-danger small"></span>
-                    <div class="form-text text-muted">Enter a direct image link (or use default placeholder avatars like <code>/images/default_profile.png</code>).</div>
+                    <div class="form-text text-muted">Or enter a direct image link (e.g. default placeholder avatars like <code>/images/default_profile.png</code>).</div>
                 </div>
 
                 <div class="text-center my-3 bg-light p-3 rounded" id="avatarPreviewContainer">
@@ -59,13 +66,25 @@
     <partial name="_ValidationScriptsPartial" />
     <script>
         $(document).ready(function() {
-            // Instant avatar preview update on input
+            // Instant avatar preview update on input URL
             $('#profilePicInput').on('input', function() {
                 var url = $(this).val().trim();
                 if (url) {
                     $('#avatarPreview').attr('src', url);
                 } else {
                     $('#avatarPreview').attr('src', '/images/default_profile.png');
+                }
+            });
+
+            // Instant avatar preview update on file upload selection
+            $('#profilePicFileInput').on('change', function() {
+                var file = this.files[0];
+                if (file) {
+                    var reader = new FileReader();
+                    reader.onload = function(e) {
+                        $('#avatarPreview').attr('src', e.target.result);
+                    }
+                    reader.readAsDataURL(file);
                 }
             });
         });

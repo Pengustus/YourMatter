@@ -93,12 +93,46 @@ namespace YourMatter.Controllers
         [ValidateAntiForgeryToken]
         public async Task<IActionResult> Edit(EditProfileViewModel model)
         {
+            if (model.ProfilePictureFile != null && model.ProfilePictureFile.Length > 0)
+            {
+                var allowedExtensions = new[] { ".jpg", ".jpeg", ".png", ".gif" };
+                var extension = Path.GetExtension(model.ProfilePictureFile.FileName).ToLower();
+                if (!allowedExtensions.Contains(extension))
+                {
+                    ModelState.AddModelError(nameof(model.ProfilePictureFile), "Only .jpg, .jpeg, .png, and .gif files are allowed.");
+                }
+                if (model.ProfilePictureFile.Length > 5 * 1024 * 1024)
+                {
+                    ModelState.AddModelError(nameof(model.ProfilePictureFile), "File size must be less than 5 MB.");
+                }
+            }
+
             if (ModelState.IsValid)
             {
                 var user = await _userManager.GetUserAsync(User);
                 if (user == null)
                 {
                     return RedirectToAction("Login", "Account");
+                }
+
+                if (model.ProfilePictureFile != null && model.ProfilePictureFile.Length > 0)
+                {
+                    var extension = Path.GetExtension(model.ProfilePictureFile.FileName).ToLower();
+                    var uploadDir = Path.Combine(Directory.GetCurrentDirectory(), "wwwroot", "images", "profiles");
+                    if (!Directory.Exists(uploadDir))
+                    {
+                        Directory.CreateDirectory(uploadDir);
+                    }
+
+                    var uniqueFileName = Guid.NewGuid().ToString() + extension;
+                    var filePath = Path.Combine(uploadDir, uniqueFileName);
+
+                    using (var fileStream = new FileStream(filePath, FileMode.Create))
+                    {
+                        await model.ProfilePictureFile.CopyToAsync(fileStream);
+                    }
+
+                    model.ProfilePictureUrl = "/images/profiles/" + uniqueFileName;
                 }
 
                 var success = await _userService.UpdateProfileAsync(user.Id, model.DisplayName, model.Bio, model.Location, model.ProfilePictureUrl);
