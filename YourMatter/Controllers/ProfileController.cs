@@ -14,13 +14,20 @@ namespace YourMatter.Controllers
         private readonly IPostService _postService;
         private readonly IFriendService _friendService;
         private readonly UserManager<ApplicationUser> _userManager;
+        private readonly SignInManager<ApplicationUser> _signInManager;
 
-        public ProfileController(IUserService userService, IPostService postService, IFriendService friendService, UserManager<ApplicationUser> userManager)
+        public ProfileController(
+            IUserService userService, 
+            IPostService postService, 
+            IFriendService friendService, 
+            UserManager<ApplicationUser> userManager,
+            SignInManager<ApplicationUser> signInManager)
         {
             _userService = userService;
             _postService = postService;
             _friendService = friendService;
             _userManager = userManager;
+            _signInManager = signInManager;
         }
 
         [AllowAnonymous]
@@ -149,6 +156,34 @@ namespace YourMatter.Controllers
             }
 
             return View(model);
+        }
+
+        [HttpPost]
+        [ValidateAntiForgeryToken]
+        public async Task<IActionResult> Delete()
+        {
+            var user = await _userManager.GetUserAsync(User);
+            if (user == null)
+            {
+                return RedirectToAction("Login", "Account");
+            }
+
+            // Log the user out first
+            await _signInManager.SignOutAsync();
+
+            // Delete user data
+            var success = await _userService.DeleteUserAsync(user.Id);
+
+            if (success)
+            {
+                TempData["SuccessMessage"] = "Your profile has been permanently deleted.";
+            }
+            else
+            {
+                TempData["ErrorMessage"] = "Could not delete your profile.";
+            }
+
+            return RedirectToAction("Index", "Home");
         }
 
         [AllowAnonymous]

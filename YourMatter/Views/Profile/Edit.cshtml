@@ -58,6 +58,14 @@
                     <button type="submit" class="btn btn-retro-primary px-4"><i class="bi bi-check-circle me-1"></i>Save Changes</button>
                 </div>
             </form>
+
+            <div class="mt-5 border-top border-danger pt-4">
+                <h5 class="text-danger fw-bold"><i class="bi bi-exclamation-triangle-fill me-2"></i>Danger Zone</h5>
+                <p class="text-muted small mb-3">Once you delete your profile, all of your posts, comments, likes, and friend connections will be permanently removed. This action cannot be undone.</p>
+                <form asp-controller="Profile" asp-action="Delete" method="post" onsubmit="return confirm('Are you absolutely sure you want to permanently delete your profile? All your data will be lost.');">
+                    <button type="submit" class="btn btn-danger px-4"><i class="bi bi-trash-fill me-1"></i>Delete My Profile</button>
+                </form>
+            </div>
         </div>
     </div>
 </div>
