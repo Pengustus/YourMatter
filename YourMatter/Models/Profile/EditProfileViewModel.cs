@@ -1,4 +1,5 @@
 using System.ComponentModel.DataAnnotations;
+using Microsoft.AspNetCore.Http;
 
 namespace YourMatter.Models.Profile
 {
@@ -14,8 +15,10 @@ namespace YourMatter.Models.Profile
         [StringLength(100, ErrorMessage = "Location cannot exceed 100 characters.")]
         public string? Location { get; set; }
 
-        [Url(ErrorMessage = "Please enter a valid URL.")]
         [Display(Name = "Profile Picture URL")]
         public string? ProfilePictureUrl { get; set; }
+
+        [Display(Name = "Upload Profile Picture")]
+        public IFormFile? ProfilePictureFile { get; set; }
     }
 }
