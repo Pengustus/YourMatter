@@ -56,7 +56,7 @@ namespace YourMatter.Data.Data
                     UserName = "tom@myspace.com",
                     Email = "tom@myspace.com",
                     EmailConfirmed = true,
-                    DisplayName = "Tom (Your First Friend!)",
+                    DisplayName = "Tom",
                     Bio = "Hi, I'm Tom. I'm here to help you get started on YourMatter! Feel free to leave a message on my wall.",
                     Location = "Santa Monica, CA",
                     ProfilePictureUrl = "/images/tom.png",
@@ -152,79 +152,12 @@ namespace YourMatter.Data.Data
                     await context.SaveChangesAsync();
                 }
 
-                // Seed Posts
-                if (!await context.Posts.AnyAsync())
+                // Ensure all posts, comments, and likes are deleted for a clean presentation
+                if (await context.Posts.AnyAsync() || await context.Comments.AnyAsync() || await context.Likes.AnyAsync())
                 {
-                    var tomPost = new Post
-                    {
-                        AuthorId = tomUser.Id,
-                        Content = "Welcome to YourMatter, the ultimate MySpace clone! Post some thoughts, add comments, customize your details, and make some friends. Glad you're here!",
-                        CreatedOn = DateTime.UtcNow.AddDays(-3),
-                        IsDeleted = false
-                    };
-
-                    var kellyPost = new Post
-                    {
-                        AuthorId = kellyUser.Id,
-                        Content = "Wow, this brings back memories! Anyone else remember coding custom styles for their profiles? Let's bring that aesthetic back!",
-                        CreatedOn = DateTime.UtcNow.AddDays(-2),
-                        IsDeleted = false
-                    };
-
-                    var bobPost = new Post
-                    {
-                        AuthorId = bobUser.Id,
-                        Content = "Hello everyone! Bob here. Looking forward to reconnecting with people on a simpler social network.",
-                        CreatedOn = DateTime.UtcNow.AddDays(-1),
-                        IsDeleted = false
-                    };
-
-                    context.Posts.AddRange(tomPost, kellyPost, bobPost);
-                    await context.SaveChangesAsync();
-
-                    // Seed Comments
-                    if (!await context.Comments.AnyAsync())
-                    {
-                        context.Comments.AddRange(new List<Comment>
-                        {
-                            new Comment
-                            {
-                                PostId = tomPost.Id,
-                                AuthorId = kellyUser.Id,
-                                Content = "Thanks for the welcome, Tom! Loving the retro vibes here.",
-                                CreatedOn = DateTime.UtcNow.AddDays(-2).AddHours(2),
-                                IsDeleted = false
-                            },
-                            new Comment
-                            {
-                                PostId = tomPost.Id,
-                                AuthorId = bobUser.Id,
-                                Content = "MySpace vibes indeed! Reminds me of the early 2000s.",
-                                CreatedOn = DateTime.UtcNow.AddDays(-2).AddHours(4),
-                                IsDeleted = false
-                            },
-                            new Comment
-                            {
-                                PostId = kellyPost.Id,
-                                AuthorId = tomUser.Id,
-                                Content = "Absolutely, Kelly! Retro layouts are the best.",
-                                CreatedOn = DateTime.UtcNow.AddDays(-1).AddHours(1),
-                                IsDeleted = false
-                            }
-                        });
-                    }
-
-                    // Seed Likes
-                    if (!await context.Likes.AnyAsync())
-                    {
-                        context.Likes.AddRange(new List<Like>
-                        {
-                            new Like { PostId = tomPost.Id, UserId = kellyUser.Id, CreatedOn = DateTime.UtcNow.AddDays(-2).AddHours(1) },
-                            new Like { PostId = tomPost.Id, UserId = bobUser.Id, CreatedOn = DateTime.UtcNow.AddDays(-2).AddHours(3) },
-                            new Like { PostId = kellyPost.Id, UserId = tomUser.Id, CreatedOn = DateTime.UtcNow.AddDays(-1) }
-                        });
-                    }
-
+                    context.Comments.RemoveRange(context.Comments);
+                    context.Likes.RemoveRange(context.Likes);
+                    context.Posts.RemoveRange(context.Posts);
                     await context.SaveChangesAsync();
                 }
             }
