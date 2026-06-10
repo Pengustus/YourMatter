@@ -73,5 +73,33 @@ namespace YourMatter.Services.Implementations
 
             return (users, totalCount);
         }
+
+        public async Task<bool> DeleteUserAsync(string id)
+        {
+            var user = await _context.Users.FirstOrDefaultAsync(u => u.Id == id);
+            if (user == null) return false;
+
+            // Delete user's comments on other posts
+            var comments = _context.Comments.Where(c => c.AuthorId == id);
+            _context.Comments.RemoveRange(comments);
+
+            // Delete user's likes on other posts
+            var likes = _context.Likes.Where(l => l.UserId == id);
+            _context.Likes.RemoveRange(likes);
+
+            // Delete user's friend requests
+            var friendRequests = _context.FriendRequests.Where(fr => fr.SenderId == id || fr.ReceiverId == id);
+            _context.FriendRequests.RemoveRange(friendRequests);
+
+            // Delete user's posts
+            var posts = _context.Posts.Where(p => p.AuthorId == id);
+            _context.Posts.RemoveRange(posts);
+
+            // Delete the user record
+            _context.Users.Remove(user);
+
+            await _context.SaveChangesAsync();
+            return true;
+        }
     }
 }

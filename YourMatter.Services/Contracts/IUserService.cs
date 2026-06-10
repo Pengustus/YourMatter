@@ -8,5 +8,6 @@ namespace YourMatter.Services.Contracts
         Task<ApplicationUser?> GetByEmailAsync(string email);
         Task<bool> UpdateProfileAsync(string id, string displayName, string? bio, string? location, string? profilePictureUrl);
         Task<(IEnumerable<ApplicationUser> Users, int TotalCount)> SearchUsersAsync(string? searchTerm, string? sortBy, int page, int pageSize);
+        Task<bool> DeleteUserAsync(string id);
     }
 }
